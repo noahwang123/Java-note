@@ -9,3 +9,11 @@
  *  <result column="creation_time" jdbcType="TIMESTAMP" property="creationTime"/>
  * </resultMap>
  */ 
+
+ //创建工具类时，为防止别人new, 可抛出一个异常
+ public class DemoUtils{
+     private DemoUtils() {
+         //这样就不能new了，最好加个注释
+         throw new AssertionError();
+     }
+ }
