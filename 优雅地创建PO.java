@@ -1,4 +1,5 @@
 // Builder Pattern
+// 当一个PO拥有很多几个必要参数(servingSize&serving)和非必需参数
 public class NutritionFacts {
     private final int servingSize;
     private final int servings;

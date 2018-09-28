@@ -15,7 +15,7 @@ public abstract class Pizza {
         protected abstract T self();
     }
     Pizza(Builder<?> builder) {
-        toppings = builder.toppings.clone(); // See Item 50
+        toppings = builder.toppings.clone();
     }
 }
 
