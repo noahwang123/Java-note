@@ -43,6 +43,7 @@ public class NutritionFacts {
         carbohydrate = builder.carbohydrate;
     }
 }
+//getter 还是要自己加，，，和以前一样
 /**
  * 如何调用这个方法
  */

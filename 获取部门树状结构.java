@@ -89,6 +89,72 @@
          * getter and setter
          */
     }
+    /**
+     * 后来采用了builderMode(详见优雅地创建PO.java)
+     */
+    import java.io.Serializable;
+    import java.util.ArrayList;
+    import java.util.List;
+    
+    public class TreeNode implements Serializable {
+    
+        private final Long id;
+        private final Long parentId;
+        private final String name;
+        private final List<TreeNode> nodes;
+    
+        public static class Builder {
+            private Long id;
+            private Long parentId;
+            private String name;
+            private List<TreeNode> nodes = new ArrayList<>();
+    
+                public Builder setId(Long id) {
+                    this.id = id;
+                    return this;
+                }
+    
+                public Builder setParentId(Long parentId) {
+                    this.parentId = parentId;
+                    return this;
+                }
+    
+                public Builder setName(String name) {
+                    this.name = name;
+                    return this;
+                }
+                public Builder setNodes(List<TreeNode> nodes) {
+                    this.nodes = nodes;
+                    return this;
+                }
+                public TreeNode build() {
+                    return new TreeNode(this);
+                }
+        }
+        private TreeNode(Builder builder) {
+            id = builder.id;
+            parentId = builder.parentId;
+            name = builder.name;
+            nodes = builder.nodes;
+        }
+    
+        public Long getId() {
+            return id;
+        }
+    
+        public Long getParentId() {
+            return parentId;
+        }
+    
+        public String getName() {
+            return name;
+        }
+    
+        public List<TreeNode> getNodes() {
+            return nodes;
+        }
+    }
+    
 
     /**
      * treeUtil (应该换个名字，不能用utils)
