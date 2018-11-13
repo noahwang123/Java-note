@@ -1,0 +1,34 @@
+/**使用 HttpClient 需要以下 6 个步骤：
+* 
+* 1. 创建 HttpClient 的实例
+* 
+* 2. 创建某种连接方法的实例，在这里是 GetMethod。在 GetMethod 的构造函数中传入待连接的地址
+* 
+* 3. 调用第一步中创建好的实例的 execute 方法来执行第二步中创建好的 method 实例
+* 
+* 4. 读 response
+* 
+* 5. 释放连接。无论执行方法是否成功，都必须释放连接
+* 
+* 6. 对得到后的内容进行处理
+*/ 
+
+//eg
+    public static void name() {
+        //创建 HttpClient 的实例, 大部分时候默认值就可以
+        HttpClient httpClient = new HttpClient();
+
+        //创建method(eg: getMethod)
+        GetMethod getMethod = new GetMethod(url);
+
+        //execute method
+        response = httpClient.execute(getMethod);
+
+        //read response
+        HttpEntity httpEntity= response.getEntity();
+
+        //release
+        getMethod.releaseConnection();
+
+        //blahblahblah
+    }

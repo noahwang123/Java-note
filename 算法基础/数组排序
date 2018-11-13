@@ -1,0 +1,24 @@
+public class order {
+    public static void main(String[] args) {
+
+        List<Integer> list = new ArrayList<>();
+        //eg.
+        List<Integer> example = Arrays.asList(1,2,3,4,9,6,8);
+
+        Integer elementI;
+        Integer elementJ;
+        Integer i;
+        Integer j;
+        Integer size = example.size();
+        for (i=0; i<size; i++) {
+            for (j=0; j<size; j++) {
+                if (example.get(j) > example.get(i)) {
+                    elementI = example.get(i);
+                    elementJ = example.get(j);
+                    example.set(i, elementJ);
+                    example.set(j, elementI);
+                }
+            }
+        }
+    }
+}

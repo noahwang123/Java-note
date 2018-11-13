@@ -1,0 +1,1 @@
+feedbackVOSS.forEach(feedbackVO-> followerIds.add(feedbackVO.getId()));
