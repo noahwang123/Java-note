@@ -1,0 +1,21 @@
+//List中调换两个元素的位置
+List<T> example = new ArrayList<>();
+elementI = example.get(i);
+elementJ = example.get(j);
+example.set(i, elementJ);
+example.set(j, elementI);
+
+//使用临时变量
+temp = x;
+y = x;
+x = temp;
+
+//不使用临时变量
+x = x+y;
+y = x-y;
+x = x-y;
+
+//or
+x = x*y;
+y = x/y;
+x = x/y;
