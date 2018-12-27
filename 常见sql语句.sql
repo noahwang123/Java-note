@@ -36,3 +36,6 @@
           </otherwise>
       </choose>
     </sql>
+
+update organization o, user u 
+set o.manager_user_id = 0 where o.manager_user_id = u.id and u.organization_id != o.id;

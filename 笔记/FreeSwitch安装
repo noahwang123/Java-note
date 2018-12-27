@@ -1,0 +1,146 @@
+一、安装步骤
+
+### 环境配置 
+1. 安装常用工具和库文件 
+> yum install -y git gcc-c++ wget alsa-lib-devel autoconf automake bison broadvoice-devel bzip2 curl-devel db-devel e2fsprogs-devel flite-devel g722_1-devel gdbm-devel gnutls-devel ilbc2-devel ldns-devel libcodec2-devel libcurl-devel libedit-devel libidn-devel libjpeg-devel libmemcached-devel libogg-devel libsilk-devel libsndfile-devel libtiff-devel libtheora-devel libtool libvorbis-devel libxml2-devel lua-devel lzo-devel mongo-c-driver-devel ncurses-devel net-snmp-devel openssl-devel opus-devel pcre-devel perl perl-ExtUtils-Embed pkgconfig portaudio-devel postgresql-devel python26-devel python-devel soundtouch-devel speex-devel sqlite-devel unbound-devel unixODBC-devel libuuid-devel which yasm zlib-devel 
+2. 下载安装包 
+> http://files.freeswitch.org/freeswitch-releases/freeswitch-1.6.20.tar.xz 
+3. 安装freeswitch的rpm的仓库 
+> yum install -y http://files.freeswitch.org/freeswitch-release-1-6.noarch.rpm epel-release 
+4. 编译，默认配置安装完的路径是 /usr/local/freeswitch 
+./configure 
+make 
+make install
+
+也可以直接 ./configure && make && make install
+5. 安装声音文件(安装声音文件的时候当前目录必须在源码的根目录) 
+make cd-moh-install && make cd-sounds-install 
+至此，freeswitch已经默认安装在你的 ***/usr/local/freeswitch/*** 目录下 
+### 修改配置 (这里目录相对于conf下) 
+配置文件夹位于freeswitch安装目录中的conf文件夹下，conf文件添加了版本控制，每次修改后提交修改，便于查看，freeswitch默认安装路径/usr/local/freeswitch 
+1. 修改autoload_configs/event_socket.conf.xml 
+`<param name="listen-ip" value="0.0.0.0"/> ` 
+2. 修改vars.xml 
+`<X-PRE-PROCESS cmd="set" data="global_codec_prefs=PCMU,PCMA"/> 
+<X-PRE-PROCESS cmd="set" data="outbound_codec_prefs=PCMU,PCMA"/> 
+<X-PRE-PROCESS cmd="set" data="default_password=123123"/>` 
+// 修改端口的目的是防止一些人利用默认端口，进行攻击 
+`<X-PRE-PROCESS cmd="set" data="internal_sip_port=5070"/> 
+<X-PRE-PROCESS cmd="set" data="internal_tls_port=5071"/> ` 
+3. 删除sip_profiles关于ipv6的配置 
+mv external-ipv6 external-ipv6.deactive 
+mv external-ipv6.xml external-ipv6.xml.deactive 
+mv internal-ipv6.xml internal-ipv6.xml.deactive 
+### 服务器相关设置 
+* 关闭服务器防火墙 
+systemctl stop firewalld 
+systemctl disable firewalld 
+如果是运行环境 最好修改下sip的默认端口5060 5061 5080 5081防被攻击 
+### freeswitch命令解析 
+
+一般这些重用的命令都是会配置到全局变量 
+ln -sf /usr/local/freeswitch/bin/freswitch /usr/bin 
+ln -sf /usr/local/freeswitch/bin/fs_cli /usr/bin 
+freeswitch # 直接启动 
+freeswitch -nc -nonat # nc表示后台模式启动，nonat表示不让freeswitch自动进行NAT穿越，可加快启动速度（默认就是配置，可以不用） 
+fs_cli # 如果是-nc启动的，这个命令是进入fs服务 
+
+二、使用
+
+### freeswitch快速调试技巧 
+为了调试方便，FreeSWITCH 还在 conf/autoload_configs/switch.conf.xml 中定义了一些控制台快捷键。你可以通过F1-F12来使用它们（不过，在某些操作系统上，有些快捷键可能与操作系统的相冲突，那你就只直接输入这些命令或重新定义他们了）。 
+`<cli-keybindings> 
+<key name="1" value="help"/> 
+<key name="2" value="status"/> 
+<key name="3" value="show channels"/> 
+<key name="4" value="show calls"/> 
+<key name="5" value="sofia status"/> 
+<key name="6" value="reloadxml"/> 
+<key name="7" value="console loglevel 0"/> 
+<key name="8" value="console loglevel 7"/> 
+<key name="9" value="sofia status profile internal"/> 
+<key name="10" value="sofia profile internal siptrace on"/> 
+<key name="11" value="sofia profile internal siptrace off"/> 
+<key name="12" value="version"/> 
+</cli-keybindings> ` 
+### 修改日志级别 
+FS>/log info # 设置为info级别 
+FS>/log debug # 设置为debug级别 
+FS>/nolog 
+### 呼叫功能 
+1. FS> originate user/1000 &echo # echo 是一个回音程序，它会将收到的声音或视频再返回来。 
+2. FS> originate user/1000 &park # 将1000用户的呼叫挂起 
+3. FS> originate user/1000 &hold # 将用户挂起的同时播放音乐 
+4. FS> originate user/1000 &playback(/root/welcome.wav) #挂起时播放特定的声音文件 
+5. FS> originate user/1000 &bridge(user/1001) # 桥接两个UA进行通话。在1000接听电话后，bridge程序再启动一个UA呼叫1001.
+
+三、优化
+
+### 安装模块 
+在下载完freeswitch源码之后，我们通常按照默认的模块配置文件(freeswitch/modules.conf)进行编译、安装。 
+但在之后的工作中默认的模块肯定不能满足我们的开发需求，所以需要动态加载一些模块。 
+具体的步骤如下： 
+1、修改配置 
+> sudo vi freeswitch/modules.conf 去掉我们需要加载模块前面的# 
+2、在模块所在的目录编译模块 
+例如我们需要添加endpoint目录下的mod_shout模块 
+> cd freeswitch/src/mod 
+> sudo make mod_shout 
+3、安装模块 
+在freeswitch目录下安装需要添加的模块 
+> cd freeswitch 
+> sudo make mod_shout-install 
+4、设置modules.conf.xml，目录在 /usr/local/freeswitch/conf/autoload_config 
+添加支持`<load module="mod_shout"/> ` 
+5、检查模块是否存在 
+> module_exists mod_shout 
+### freeswitch 执行命令 
+> fs_cli -x "sofia status" 
+### gdb调试 
+> gdb freeswitch core.4766 
+> where 
+### 输出通道参数 
+``` 
+<action application="log" data="INFO The value in the var_name chan var is ${var_name}"/> 
+``` 
+### 避免转码，使用aleg提供个codec呼叫bleg找出最优的编码 
+``` 
+1.在vars.xml中配置 
+<X-PRE-PROCESS cmd="set" data="media_mix_inbound_outbound_codecs=true"/> 
+2. sip_profiles/internal.xml中配置 
+<param name="disable-transcoding" value="true"/> 
+``` 
+### ldns升级 
+> wget http://www.openssl.org/source/openssl-1.1.0c.tar.gz 
+> tar xvf openssl-1.1.0c.tar.gz 
+> cd openssl-1.1.0c 
+> ./config --prefix=/root/openssl-1.1.0c/openssl-out --openssldir=/root/openssl-1.1.0c/openssl-out/ssl && make && make install 
+> wget http://www.nlnetlabs.nl/downloads/ldns/ldns-1.7.0.tar.gz 
+> tar xvf ldns-1.7.0.tar.gz 
+> cd ldns-1.7.0 
+> ./configure --prefix=/root/ldns-1.7.0/ldns-out --with-ssl=/root/openssl-1.1.0c/openssl-out && make && make install 
+> cd ldns-out/lib 
+> ln -s libldns.so.2.0.0 libldns.so.1 
+> 以上步骤就算编译好了openssl和ldns，然后将他们拷贝到/usr/local/ 
+> cp -r openssl-1.1.0c/openssl-out /usr/local/openssl-1.1.0c 
+> cp -r ldns-1.7.0/ldns-out /usr/local/ldns-1.7.0 
+> 替换以前的ldns模块 
+> cp /usr/local/ldns-1.7.0/lib/libldns.so.2.0.0 /usr/lib64/ 
+> 执行ldconfig 
+> 查看 ll /usr/lib64/libldns.so* 
+> 重启FS使其mod_enum模块所依赖的ldns库生效 
+> bin/freeswitch restart 
+> 查看更换是否成功 
+> ldd freeswitch/mod/mod_enum.so 
+
+
+
+遇到的问题
+
+1、第一次装的时候make install的过程中报了一个frontData的错误（好像就是字体文件的错误，第二次安装就没有报错了），一直在找问题出在哪里。后门知道make install的过程中偶尔是会发生一些错误，但是没事可以继续使用。如果再make install中出现错误，可以不用管，直接启动。看看是否启动成功
+
+2、使用的是阿里云的服务器，安装完成之后，可以打电话，但是没有声音；这个问题是阿里云安全组的端口没有开好，安全组的所有入/出的所有端口全部开了，就解决了
+
+其他常见问题的解决 
+https://www.cnblogs.com/lzpong/p/6740188.html 
+

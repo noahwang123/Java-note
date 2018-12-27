@@ -1,0 +1,4 @@
+//当一个class继承了comparable
+public class example implements Comparable<example> {
+    
+}
